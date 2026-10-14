@@ -3,7 +3,7 @@
 An animated zsh prompt for macOS. A soft light sweeps across your path, the `❯` flows through the Apple Intelligence colours, and long tasks finish with a sparkle.
 
 ```
-󰉋 ~/Apple/KDS
+󰉋 ~/Apple/sheen
 ❯ _                          ✦ took 12s ✦ · 󰘬 main status [+1]
 ```
 
