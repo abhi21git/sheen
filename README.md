@@ -1,24 +1,61 @@
-# ✨ Sheen
+<p align="center">
+  <img src="assets/icon.png" width="128" alt="Sheen icon">
+</p>
 
-An animated zsh prompt for macOS. A soft light sweeps across your path, the `❯` flows through the Apple Intelligence colours, and long tasks finish with a sparkle.
+<h1 align="center">Sheen</h1>
 
-```
+<p align="center">
+  An animated zsh prompt for macOS.<br>
+  <sub>A soft light sweeps across your path, the prompt glows while you type, and long tasks finish with a sparkle.</sub>
+</p>
+
+<br>
+
+```text
 󰉋 ~/Apple/sheen
-❯ _                          ✦ took 12s ✦ · 󰘬 main status [+1]
+❯ git push                                  ✦ took 12s ✦ · 󰘬 main ↑1 status [+2 ?1]
 ```
 
-## Features
+<br>
 
-- **Shimmer**: a sheen of light sweeps across the current path every few seconds
-- **Glow**: `❯` flows blue → purple → pink → orange, brightens while you type, and breathes red after an error
-- **Day/night palette**: warm at dawn, Apple Intelligence by day, calm indigo at night
-- **Per-project colour**: every repo gets its own tint, so panes are easy to tell apart
-- **Git on the right**: branch, ahead/behind, `+staged !modified ?untracked`, loaded async with a spinner in slow repos and rolling text when it changes
-- **Long-task finish**: commands over 10s end with a sparkle, the Glass sound, and a notification if your terminal isn't in front
-- **Transient prompt**: earlier prompts collapse to `folder ❯ command`
-- **Respects your Mac**: animation stops with Reduce Motion or Low Power Mode on
+## What it does
 
-No dependencies beyond zsh 5.8+ and a [Nerd Font](https://www.nerdfonts.com) for the icons.
+<table>
+  <tr>
+    <td width="30%"><b>Shimmer</b></td>
+    <td>A sheen of light sweeps across the current path every few seconds.</td>
+  </tr>
+  <tr>
+    <td><b>Glow</b></td>
+    <td>The <code>❯</code> flows blue → purple → pink → orange, brightens while you type, and breathes red after an error.</td>
+  </tr>
+  <tr>
+    <td><b>Day and night</b></td>
+    <td>Warm peach and gold in the morning, vivid colours by day, calm indigo and teal at night.</td>
+  </tr>
+  <tr>
+    <td><b>Per-project colour</b></td>
+    <td>Every repo gets its own tint, so terminal panes are easy to tell apart.</td>
+  </tr>
+  <tr>
+    <td><b>Git on the right</b></td>
+    <td>Branch, ahead/behind and <code>+staged !modified ?untracked</code>. Loaded in the background, with a spinner in slow repos and rolling text when something changes.</td>
+  </tr>
+  <tr>
+    <td><b>Long-task finish</b></td>
+    <td>Commands over 10 seconds end with a sparkle and the Glass sound, plus a notification if your terminal isn't in front.</td>
+  </tr>
+  <tr>
+    <td><b>Clean scrollback</b></td>
+    <td>Earlier prompts collapse to <code>folder ❯ command</code>.</td>
+  </tr>
+  <tr>
+    <td><b>Respects your Mac</b></td>
+    <td>Animation stops when Reduce Motion or Low Power Mode is on.</td>
+  </tr>
+</table>
+
+Needs zsh 5.8 or later and a [Nerd Font](https://www.nerdfonts.com) for the icons. Nothing else to install.
 
 ## Install
 
@@ -28,7 +65,7 @@ git clone git@github.com:abhi21git/sheen.git ~/.sheen && ~/.sheen/install.sh
 
 Then open a new tab.
 
-**oh-my-zsh:** either set `ZSH_THEME=""` and use the line above, or copy `sheen.zsh-theme` into `$ZSH_CUSTOM/themes/` and set `ZSH_THEME="sheen"`.
+> **Using oh-my-zsh?** Set `ZSH_THEME=""` and use the line above, or copy `sheen.zsh-theme` into `$ZSH_CUSTOM/themes/` and set `ZSH_THEME="sheen"`.
 
 ## Options
 
@@ -38,19 +75,14 @@ Then open a new tab.
 
 Set it in `~/.zshrc` before the `source` line.
 
-## Update
+## Update and uninstall
 
 ```bash
-git -C ~/.sheen pull
-```
-
-## Uninstall
-
-```bash
-~/.sheen/install.sh --uninstall && rm -rf ~/.sheen
+git -C ~/.sheen pull                                     # update
+~/.sheen/install.sh --uninstall && rm -rf ~/.sheen       # uninstall
 ```
 
 ## Notes
 
-- Sheen uses `TRAPUSR1` for async git updates. If your config defines its own `TRAPUSR1`, one of them will win.
+- Sheen uses `TRAPUSR1` for background git updates. If your config defines its own `TRAPUSR1`, only one of them will run.
 - Load `zsh-syntax-highlighting` after Sheen, as its docs recommend.
