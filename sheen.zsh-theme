@@ -20,7 +20,7 @@ _sheen_glow=($_sheen_palette_day)
 _sheen_tints=(99 230 190  255 122 107  185 166 255  255 194 75  100 210 255  255 111 174  64 200 224  168 224 95)
 _sheen_path_rgb=(100 210 255)
 _sheen_spinner=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
-_sheen_done_at=0 _sheen_morph_at=0 _sheen_vcs_pending_since=0 _sheen_typed_at=0
+_sheen_done_at=0 _sheen_morph_at=0 _sheen_cd_at=0 _sheen_vcs_pending_since=0 _sheen_typed_at=0
 _sheen_phase=0 _sheen_frame_at=$EPOCHREALTIME _sheen_calm=0 _sheen_sys_checked=0
 
 _sheen_hex() { printf -v REPLY '#%02x%02x%02x' $1 $2 $3 }
@@ -37,11 +37,32 @@ _sheen_grad() {
 }
 
 _sheen_set_palette() {
- local h; strftime -s h %H $EPOCHSECONDS
- if (( h >= 6 && h < 11 )); then _sheen_glow=($_sheen_palette_dawn)
- elif (( h >= 11 && h < 18 )); then _sheen_glow=($_sheen_palette_day)
- else _sheen_glow=($_sheen_palette_night)
+ local h m; strftime -s h %H $EPOCHSECONDS; strftime -s m %M $EPOCHSECONDS
+ local t=$(( h * 60 + m )) from to f i
+ if (( t >= 360 && t < 660 )); then from=night to=dawn f=$(( (t - 360) / 30.0 ))
+ elif (( t >= 660 && t < 1080 )); then from=dawn to=day f=$(( (t - 660) / 30.0 ))
+ else from=day to=night f=$(( (t - 1080 + 1440) % 1440 / 30.0 ))
  fi
+ (( f > 1 )) && f=1
+ local a=(${(P)${:-_sheen_palette_$from}}) b=(${(P)${:-_sheen_palette_$to}})
+ _sheen_glow=()
+ for (( i = 1; i <= 12; i++ )); do _sheen_glow+=($(( int(a[i] + (b[i] - a[i]) * f) ))); done
+}
+
+_sheen_scramble() {
+ local o="" c code i
+ for (( i = 1; i <= ${#1}; i++ )); do
+  c=${1[i]}
+  if (( i > $2 )); then
+   if [[ $c == [0-9] ]]; then
+    c=$(( ($3 + i) % 10 ))
+   elif [[ $c == [a-zA-Z] ]]; then
+    code=$(( 97 + ($3 + i * 7) % 26 )); c=${(#)code}
+   fi
+  fi
+  o+=$c
+ done
+ REPLY=$o
 }
 
 _sheen_set_tint() {
@@ -64,10 +85,11 @@ _sheen_check_system() {
  [[ $(defaults read com.apple.universalaccess reduceMotion 2>/dev/null) == 1 ]] && _sheen_calm=1
  local lpm=${(M)${(f)"$(pmset -g 2>/dev/null)"}:#*lowpowermode*}
  [[ ${lpm##* } == 1 ]] && _sheen_calm=1
+ (( !_sheen_calm != ${+_sheen_fd} )) && _sheen_ticker $(( !_sheen_calm ))
 }
 
 _sheen_notify_done() {
- [[ -n $SHEEN_QUIET ]] && return
+ [[ -n $SHEEN_QUIET || -n $SSH_CONNECTION ]] && return
  local title=${_sheen_cmd_name//[^[:alnum:]._-]/}
  {
   afplay /System/Library/Sounds/Glass.aiff &
@@ -87,6 +109,9 @@ _sheen_frame() {
  if (( _sheen_last_exit )); then
   local f=$(( (sin(vt * 3.0) + 1) / 2 ))
   _sheen_hex 255 $(( int(69 + 90 * f) )) $(( int(58 - 48 * f) ))
+ elif (( EUID == 0 )); then
+  local f=$(( (sin(vt * 5.0) + 1) / 2 ))
+  _sheen_hex 255 $(( int(150 + 60 * f) )) $(( int(40 * f) ))
  else
   local k=$(( 0.8 + 0.2 * e )) wm=$(( 0.3 * e ))
   (( _sheen_calm )) && _sheen_grad 0 || _sheen_grad $_sheen_phase
@@ -96,6 +121,10 @@ _sheen_frame() {
 
  _sheen_hex $_sheen_path_rgb; _sheen_path_hex=$REPLY
  local text=${(%):-%~} out="" ch d t
+ if (( !_sheen_calm && now - _sheen_cd_at < 0.45 )); then
+  _sheen_scramble $text $(( (now - _sheen_cd_at) / 0.45 * ${#text} )) $(( int(now * 30) ))
+  text=$REPLY
+ fi
  local n=${#text} w=4.0 sweep=$(( (vt % 4.0) / 0.9 ))
  local pos=$(( sweep * (n + 2 * w) - w ))
  for (( i = 1; i <= n; i++ )); do
@@ -115,21 +144,16 @@ _sheen_frame() {
  if (( _sheen_vcs_pending_since && now - _sheen_vcs_pending_since > 0.15 )) && [[ -n $vcs ]]; then
   _sheen_vcs_display="%F{208}${_sheen_spinner[int(now * 12) % 10 + 1]}%f"
  elif (( !_sheen_calm && now - _sheen_morph_at < 0.45 )) && [[ -n $vcs ]]; then
-  local plain=${(S)vcs//\%F\{*\}/} o="" c code tick=$(( int(now * 30) ))
+  local plain=${(S)vcs//\%F\{*\}/}
   plain=${plain//\%f/}
   local p=$(( (now - _sheen_morph_at) / 0.45 * ${#plain} ))
-  for (( i = 1; i <= ${#plain}; i++ )); do
-   c=${plain[i]}
-   if (( i > p )); then
-    if [[ $c == [0-9] ]]; then
-     c=$(( (tick + i) % 10 ))
-    elif [[ $c == [a-zA-Z] ]]; then
-     code=$(( 97 + (tick + i * 7) % 26 )); c=${(#)code}
-    fi
-   fi
-   o+=$c
-  done
-  _sheen_vcs_display="%F{208}${o[1,int(p)]}%F{244}${o[int(p)+1,-1]}%f"
+  _sheen_scramble $plain $p $(( int(now * 30) ))
+  _sheen_vcs_display="%F{208}${REPLY[1,int(p)]}%F{244}${REPLY[int(p)+1,-1]}%f"
+ elif [[ $vcs == *↑* ]]; then
+  local f=$(( (sin(vt * 2.0) + 1) / 4 + 0.5 ))
+  _sheen_hex $(( int(255 * f) )) $(( int(135 * f) )) 0
+  local icon="%F{$REPLY}󰘬"
+  _sheen_vcs_display=${vcs/\%F\{208\}󰘬/$icon}
  else
   _sheen_vcs_display=$vcs
  fi
@@ -155,18 +179,26 @@ _sheen_frame() {
 
 _sheen_tick() {
  sysread -i $1 -s 4096 _ 2>/dev/null
- (( _sheen_calm )) && return
  [[ $_sheen_real_widget == *(complete|incremental-search|menu-select)* ]] && return
  _sheen_frame
  zle reset-prompt
 }
 zle -N _sheen_tick
-if (( ${+_sheen_fd} )); then
- zle -F $_sheen_fd 2>/dev/null
- exec {_sheen_fd}<&-
-fi
-exec {_sheen_fd}< <(while :; do zselect -t 6; print || exit; done)
-zle -F -w $_sheen_fd _sheen_tick
+
+_sheen_ticker() {
+ if (( ${+_sheen_fd} )); then
+  zle -F $_sheen_fd 2>/dev/null
+  exec {_sheen_fd}<&-
+  unset _sheen_fd
+ fi
+ (( $1 )) || return
+ exec {_sheen_fd}< <(while :; do zselect -t 6; print || exit; done)
+ zle -F -w $_sheen_fd _sheen_tick
+}
+_sheen_ticker 1
+
+_sheen_chpwd() { _sheen_cd_at=$EPOCHREALTIME }
+add-zsh-hook chpwd _sheen_chpwd
 
 _sheen_track_keys() {
  [[ $LASTWIDGET != _sheen_tick ]] && _sheen_real_widget=$LASTWIDGET
@@ -235,7 +267,9 @@ _sheen_precmd_prompt() {
   unset _sheen_cmd_start
  fi
  if (( last_exit != 0 )); then
-  _sheen_exit="%F{red}× ${last_exit}%f "
+  local code=$last_exit
+  (( last_exit > 128 && last_exit - 127 <= ${#signals} )) && code=${signals[last_exit-127]}
+  _sheen_exit="%F{red}× ${code}%f "
  else
   _sheen_exit=""
  fi
@@ -278,9 +312,10 @@ zstyle ':vcs_info:git+set-message:sheen:*' hooks sheen-git-st
 zstyle ':vcs_info:git:sheen:*' formats '%F{208}󰘬 %b%f%m' '%r'
 zstyle ':vcs_info:git:sheen:*' actionformats '%F{208}󰘬 %b|%a%f%m' '%r'
 
-_sheen_full_prompt=$'%F{${_sheen_path_hex}}󰉋 ${_sheen_anim_path}\n${_sheen_exit}${_sheen_anim_arrow} '
+[[ -n $SSH_CONNECTION ]] && _sheen_host='%F{244}%n@%m%f '
+_sheen_full_prompt=$'${_sheen_host}%F{${_sheen_path_hex}}󰉋 ${_sheen_anim_path}\n${_sheen_exit}${_sheen_anim_arrow} '
 PROMPT=$_sheen_full_prompt
 RPROMPT='${_sheen_rprompt}'
 
-_sheen_transient_prompt() { PROMPT='%F{244}%1~ ❯%f '; zle .reset-prompt }
+_sheen_transient_prompt() { PROMPT='%F{244}%1~ ❯%f '; _sheen_rprompt=; zle .reset-prompt }
 add-zle-hook-widget line-finish _sheen_transient_prompt

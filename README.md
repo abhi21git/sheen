@@ -27,19 +27,19 @@
   </tr>
   <tr>
     <td><b>Glow</b></td>
-    <td>The <code>❯</code> flows blue → purple → pink → orange, brightens while you type, and breathes red after an error.</td>
+    <td>The <code>❯</code> flows blue → purple → pink → orange, brightens while you type, breathes red after an error, and burns gold when you're root.</td>
   </tr>
   <tr>
     <td><b>Day and night</b></td>
-    <td>Warm peach and gold in the morning, vivid colours by day, calm indigo and teal at night.</td>
+    <td>Warm peach and gold in the morning, vivid colours by day, calm indigo and teal at night, crossfading between them.</td>
   </tr>
   <tr>
     <td><b>Per-project colour</b></td>
-    <td>Every repo gets its own tint, so terminal panes are easy to tell apart.</td>
+    <td>Every repo gets its own tint, so terminal panes are easy to tell apart. The path decodes in when you <code>cd</code>.</td>
   </tr>
   <tr>
     <td><b>Git on the right</b></td>
-    <td>Branch, ahead/behind and <code>+staged !modified ?untracked</code>. Loaded in the background, with a spinner in slow repos and rolling text when something changes.</td>
+    <td>Branch, ahead/behind and <code>+staged !modified ?untracked</code>. Loaded in the background, with a spinner in slow repos and rolling text when something changes. The branch icon pulses while you have unpushed commits.</td>
   </tr>
   <tr>
     <td><b>Long-task finish</b></td>
@@ -47,11 +47,11 @@
   </tr>
   <tr>
     <td><b>Clean scrollback</b></td>
-    <td>Earlier prompts collapse to <code>folder ❯ command</code>.</td>
+    <td>Earlier prompts collapse to <code>folder ❯ command</code>. Exit codes from signals read as <code>× INT</code>, <code>× KILL</code>.</td>
   </tr>
   <tr>
     <td><b>Respects your Mac</b></td>
-    <td>Animation stops when Reduce Motion or Low Power Mode is on.</td>
+    <td>Animation stops completely when Reduce Motion or Low Power Mode is on. Over SSH it shows <code>user@host</code> and stays silent.</td>
   </tr>
 </table>
 
