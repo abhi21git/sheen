@@ -12,7 +12,7 @@
 <br>
 
 ```text
-󰉋 ~/Apple/sheen
+󰉋 ~/Projects/sheen
 ❯ git push                                  ✦ took 12s ✦ · 󰘬 main ↑1 status [+2 ?1]
 ```
 
