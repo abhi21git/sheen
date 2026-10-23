@@ -86,3 +86,7 @@ git -C ~/.sheen pull                                     # update
 
 - Sheen uses `TRAPUSR1` for background git updates. If your config defines its own `TRAPUSR1`, only one of them will run.
 - Load `zsh-syntax-highlighting` after Sheen, as its docs recommend.
+
+## License
+
+[MIT](LICENSE)
